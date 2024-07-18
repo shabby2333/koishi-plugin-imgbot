@@ -12,8 +12,13 @@
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "imgbot"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shabby2333/koishi-plugin-imgbot.git"
+  },
   "peerDependencies": {
     "koishi": "^4.17.8"
   }
