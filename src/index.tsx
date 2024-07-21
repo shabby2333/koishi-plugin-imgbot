@@ -9,6 +9,8 @@ export interface Config {
   baseDir: string
   dirs: Record<string, string>
   cds: Record<string, string>
+  // saveImagePrefix: string
+  // getImagePrefix: string
 }
 
 export const Config: Schema<Config> = Schema.object({
@@ -16,7 +18,11 @@ export const Config: Schema<Config> = Schema.object({
   dirs: Schema.dict(String).role('table')
     .description("分群文件数据存放位置: 键为群号,值为分群key 优先级为 设置特定分组 > 设置所有分组 > 默认存储到对应群号下 如需设置所有群对应路径 键为 'all' "),
   cds: Schema.dict(String).role('table').default({ 'all': '0' })
-    .description("分群CD配置, 键为群号 或 分群key, 值为cd时间(s)，优先级为 群号 > 分群key > all > 默认(0)")
+    .description("分群CD配置, 键为群号 或 分群key, 值为cd时间(s)，优先级为 群号 > 分群key > all > 默认(0)"),
+  // saveImagePrefix: Schema.string().default('/').required()
+  //   .description("存图指令"),
+  // getImagePrefix: Schema.string().default('/').required()
+  // .description("取图指令"),
 })
 
 const cdMap: Map<string, number> = new Map()
