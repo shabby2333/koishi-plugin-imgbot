@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-imgbot",
   "description": "a simple image bot",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -20,6 +20,7 @@
     "url": "git+https://github.com/shabby2333/koishi-plugin-imgbot.git"
   },
   "peerDependencies": {
+    "@satorijs/element": "*",
     "koishi": "^4.17.8"
   }
 }
