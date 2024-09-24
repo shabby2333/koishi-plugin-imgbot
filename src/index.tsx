@@ -39,8 +39,8 @@ export function apply(ctx: Context) {
       const dirName = getGroupPath(session.guildId, dir)
 
       images.forEach(async ({ attrs: img }) => {
-        const tmpPath = await ctx.assets.upload(img.src, img.file);
-        renameSync(tmpPath.replace('file://', ''), path.join(dirName, img.file))
+          const tmpPath = await ctx.assets.upload(img.src, img.filename);
+          renameSync(tmpPath.replace('file://', ''), path.join(dirName, img.filename))
       })
 
       session.send("保存成功")
