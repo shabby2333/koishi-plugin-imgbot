@@ -2,6 +2,7 @@ import { Context, Plugin, Random, Schema } from 'koishi'
 import { } from '@koishijs/assets'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync } from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 export const name = 'imgbot'
 export const inject: Plugin['inject'] = ['assets']
@@ -39,8 +40,11 @@ export function apply(ctx: Context) {
       const dirName = getGroupPath(session.guildId, dir)
 
       images.forEach(async ({ attrs: img }) => {
-          const tmpPath = await ctx.assets.upload(img.src, img.filename);
-          renameSync(tmpPath.replace('file://', ''), path.join(dirName, img.filename))
+          let tmpPath = await ctx.assets.upload(img.src, img.filename);
+          tmpPath = fileURLToPath(tmpPath)
+          const p = path.parse(tmpPath)
+          const filename = `${p.name}.${p.ext}`
+          renameSync(tmpPath, path.join(dirName, filename))
       })
 
       session.send("保存成功")
