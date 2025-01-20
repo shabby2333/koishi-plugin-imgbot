@@ -1,8 +1,9 @@
 import { Context, Plugin, Random, Schema } from 'koishi'
 import { } from '@koishijs/assets'
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync } from 'fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { mkdir, readdir, rename } from 'fs/promises'
 
 export const name = 'imgbot'
 export const inject: Plugin['inject'] = ['assets']
@@ -37,19 +38,25 @@ export function apply(ctx: Context) {
     const images = session.elements.filter(e => e.type === 'img') as JSX.ResourceElement[]
     if (!dir) return
     if (images && images.length) {
-      const dirName = getGroupPath(session.guildId, dir)
+      const dirName = await getGroupPath(session.guildId, dir)
 
-      images.forEach(async ({ attrs: img }) => {
-          let tmpPath = await ctx.assets.upload(img.src, img.filename);
+      let fail = 0, all = 0
+      await Promise.allSettled(images.map(async ({ attrs: img }) => {
+        try {
+          all++
+          let tmpPath = await ctx.assets.upload(img.src, img.filename)
           tmpPath = fileURLToPath(tmpPath)
           const p = path.parse(tmpPath)
           const filename = `${p.name}.${p.ext}`
-          renameSync(tmpPath, path.join(dirName, filename))
-      })
+          await rename(tmpPath, path.join(dirName, filename))
+        } catch (e) {
+          fail++
+        }
+      }))
 
-      session.send("保存成功")
+      await session.send(`共保存${all}张图片，保存成功${all - fail}张，失败${fail}张`)
     } else {
-      const dirPath = getGroupPath(session.guildId, dir)
+      const dirPath = await getGroupPath(session.guildId, dir)
       let imgPath: string | null = null;
       if (statSync(dirPath).isFile()) imgPath = dirPath
       else {
@@ -60,13 +67,13 @@ export function apply(ctx: Context) {
       if (!imgPath) return
 
       const img = 'data:image/png;base64,' + readFileSync(imgPath).toString('base64')
-      session.send(<img src={img} />)
+      await session.send(<img src={img} />)
     }
   })
 
   ctx.command('imgbot/ls')
-    .action(({ session }) => {
-      const dirs = readdirSync(getGroupPath(session.guildId))
+    .action(async ({ session }) => {
+      const dirs = await readdir(await getGroupPath(session.guildId))
       return "dirs: " + dirs?.join(',')
     })
   // 命令解析 img bug，暂不可用
@@ -94,7 +101,7 @@ export function apply(ctx: Context) {
   //     return <img src={img} />
   //   })
 
-  function getGroupPath(groupId: number | string, dirName?: string, fileName?: string) {
+  async function getGroupPath(groupId: number | string, dirName?: string, fileName?: string) {
     const config = ctx.config as Config
     const baseDir = config.baseDir
     const basePath = path.resolve(baseDir)
@@ -105,12 +112,12 @@ export function apply(ctx: Context) {
         : `${groupId}`
     const groupPath = path.resolve(path.join(baseDir, groupDir))
     if (!groupPath.startsWith(basePath)) throw new Error('unsafe group path: ' + groupPath)
-    if (!existsSync(groupPath)) mkdirSync(groupPath, { recursive: true })
+    if (!existsSync(groupPath)) await mkdir(groupPath, { recursive: true })
     if (!dirName) return groupPath
 
     const dirPath = path.resolve(path.join(groupPath, dirName))
     if (!dirPath.startsWith(basePath)) throw new Error('unsafe dir path: ' + dirPath)
-    if (!existsSync(dirPath)) mkdirSync(dirPath, { recursive: true })
+    if (!existsSync(dirPath)) await mkdir(dirPath, { recursive: true })
     if (!fileName) return dirPath
 
     const imgPath = path.resolve(path.join(dirPath, fileName))
