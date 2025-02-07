@@ -76,31 +76,7 @@ export function apply(ctx: Context) {
       const dirs = await readdir(await getGroupPath(session.guildId))
       return "dirs: " + dirs?.join(',')
     })
-  // 命令解析 img bug，暂不可用
-  // ctx.command('imgbot/save <dirName:string> <img:image>')
-  //   .action(async ({ session }, dirName, img) => {
-  //     const tmpPath = await ctx.assets.upload(img.src, img.file);
-  //     renameSync(tmpPath.replace('file://', ''), getGroupPath(session.guildId, dirName, img.file))
-
-  //     return "保存成功"
-  //   })
-  // ctx.command('imgbot/get <dirName>')
-  //   .action(({ session }, dirName) => {
-  //     if (!canGet(session.guildId)) return
-  //     const dirPath = getGroupPath(session.guildId, dirName)
-  //     let imgPath: string | null = null;
-  //     if (statSync(dirPath).isFile()) imgPath = dirPath
-  //     else {
-  //       const files = readdirSync(dirPath, { withFileTypes: true }).filter(e => e.isFile())
-  //       const file = files[Random.int(files.length)]
-  //       imgPath = path.join(file.parentPath, file.name)
-  //     }
-  //     if (!imgPath) return
-
-  //     const img = 'data:image/png;base64,' + readFileSync(imgPath).toString('base64')
-  //     return <img src={img} />
-  //   })
-
+    
   async function getGroupPath(groupId: number | string, dirName?: string, fileName?: string) {
     const config = ctx.config as Config
     const baseDir = config.baseDir
