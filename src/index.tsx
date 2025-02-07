@@ -1,9 +1,8 @@
 import { Context, Plugin, Random, Schema } from 'koishi'
 import { } from '@koishijs/assets'
-import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { mkdir, readdir, rename } from 'fs/promises'
+import { mkdir, readdir, readFile, rename, stat } from 'fs/promises'
 
 export const name = 'imgbot'
 export const inject: Plugin['inject'] = ['assets']
@@ -58,15 +57,15 @@ export function apply(ctx: Context) {
     } else {
       const dirPath = await getGroupPath(session.guildId, dir)
       let imgPath: string | null = null;
-      if (statSync(dirPath).isFile()) imgPath = dirPath
+      if ((await stat(dirPath)).isFile()) imgPath = dirPath
       else {
-        const files = readdirSync(dirPath, { withFileTypes: true }).filter(e => e.isFile())
+        const files = (await readdir(dirPath, { withFileTypes: true })).filter(e => e.isFile())
         const file = files[Random.int(files.length)]
         imgPath = path.join(file.parentPath, file.name)
       }
       if (!imgPath) return
 
-      const img = 'data:image/png;base64,' + readFileSync(imgPath).toString('base64')
+      const img = 'data:image/png;base64,' + (await readFile(imgPath)).toString('base64')
       await session.send(<img src={img} />)
     }
   })
@@ -112,12 +111,12 @@ export function apply(ctx: Context) {
         : `${groupId}`
     const groupPath = path.resolve(path.join(baseDir, groupDir))
     if (!groupPath.startsWith(basePath)) throw new Error('unsafe group path: ' + groupPath)
-    if (!existsSync(groupPath)) await mkdir(groupPath, { recursive: true })
+    if (!(await stat(groupPath)).isDirectory()) await mkdir(groupPath, { recursive: true })
     if (!dirName) return groupPath
 
     const dirPath = path.resolve(path.join(groupPath, dirName))
     if (!dirPath.startsWith(basePath)) throw new Error('unsafe dir path: ' + dirPath)
-    if (!existsSync(dirPath)) await mkdir(dirPath, { recursive: true })
+    if (!(await stat(dirPath)).isDirectory()) await mkdir(dirPath, { recursive: true })
     if (!fileName) return dirPath
 
     const imgPath = path.resolve(path.join(dirPath, fileName))
