@@ -55,6 +55,7 @@ export function apply(ctx: Context) {
 
       await session.send(`共保存${all}张图片，保存成功${all - fail}张，失败${fail}张`)
     } else {
+      if(canGet(session.guildId)) return
       const dirPath = await getGroupPath(session.guildId, dir)
       let imgPath: string | null = null;
       if ((await stat(dirPath)).isFile()) imgPath = dirPath
