@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-imgbot",
   "description": "a simple image bot",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

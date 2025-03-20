@@ -3,6 +3,7 @@ import { } from '@koishijs/assets'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { mkdir, readdir, readFile, rename, stat } from 'fs/promises'
+import { existsSync } from 'fs'
 
 export const name = 'imgbot'
 export const inject: Plugin['inject'] = ['assets']
@@ -55,7 +56,7 @@ export function apply(ctx: Context) {
 
       await session.send(`共保存${all}张图片，保存成功${all - fail}张，失败${fail}张`)
     } else {
-      if(canGet(session.guildId)) return
+      if (!canGet(session.guildId)) return
       const dirPath = await getGroupPath(session.guildId, dir)
       let imgPath: string | null = null;
       if ((await stat(dirPath)).isFile()) imgPath = dirPath
@@ -76,7 +77,7 @@ export function apply(ctx: Context) {
       const dirs = await readdir(await getGroupPath(session.guildId))
       return "dirs: " + dirs?.join(',')
     })
-    
+
   async function getGroupPath(groupId: number | string, dirName?: string, fileName?: string) {
     const config = ctx.config as Config
     const baseDir = config.baseDir
@@ -88,16 +89,17 @@ export function apply(ctx: Context) {
         : `${groupId}`
     const groupPath = path.resolve(path.join(baseDir, groupDir))
     if (!groupPath.startsWith(basePath)) throw new Error('unsafe group path: ' + groupPath)
-    if (!(await stat(groupPath)).isDirectory()) await mkdir(groupPath, { recursive: true })
+    if (!existsSync(groupPath) || !(await stat(groupPath)).isDirectory()) await mkdir(groupPath, { recursive: true })
     if (!dirName) return groupPath
 
     const dirPath = path.resolve(path.join(groupPath, dirName))
     if (!dirPath.startsWith(basePath)) throw new Error('unsafe dir path: ' + dirPath)
-    if (!(await stat(dirPath)).isDirectory()) await mkdir(dirPath, { recursive: true })
+    if (!existsSync(dirPath) || !(await stat(dirPath)).isDirectory()) await mkdir(dirPath, { recursive: true })
     if (!fileName) return dirPath
 
     const imgPath = path.resolve(path.join(dirPath, fileName))
     if (!imgPath.startsWith(basePath)) throw new Error('unsafe image path: ' + imgPath)
+    if (!existsSync(imgPath) || !existsSync(imgPath)) mkdir(imgPath, { recursive: true })
     return imgPath
   }
 
