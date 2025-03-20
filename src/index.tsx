@@ -3,7 +3,6 @@ import { } from '@koishijs/assets'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { mkdir, readdir, readFile, rename, stat } from 'fs/promises'
-import { existsSync } from 'fs'
 
 export const name = 'imgbot'
 export const inject: Plugin['inject'] = ['assets']
@@ -89,17 +88,17 @@ export function apply(ctx: Context) {
         : `${groupId}`
     const groupPath = path.resolve(path.join(baseDir, groupDir))
     if (!groupPath.startsWith(basePath)) throw new Error('unsafe group path: ' + groupPath)
-    if (!existsSync(groupPath) || !(await stat(groupPath)).isDirectory()) await mkdir(groupPath, { recursive: true })
+    try { await stat(groupPath) } catch (e) { await mkdir(groupPath, { recursive: true }) }
     if (!dirName) return groupPath
 
     const dirPath = path.resolve(path.join(groupPath, dirName))
     if (!dirPath.startsWith(basePath)) throw new Error('unsafe dir path: ' + dirPath)
-    if (!existsSync(dirPath) || !(await stat(dirPath)).isDirectory()) await mkdir(dirPath, { recursive: true })
+    try { await stat(dirPath) } catch (e) { await mkdir(dirPath, { recursive: true }) }
     if (!fileName) return dirPath
 
     const imgPath = path.resolve(path.join(dirPath, fileName))
     if (!imgPath.startsWith(basePath)) throw new Error('unsafe image path: ' + imgPath)
-    if (!existsSync(imgPath) || !existsSync(imgPath)) mkdir(imgPath, { recursive: true })
+    try { await stat(imgPath) } catch (e) { await mkdir(imgPath, { recursive: true }) }
     return imgPath
   }
 
